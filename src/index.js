@@ -11,11 +11,25 @@ app.use(express.json());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const {username} = request.headers
+
+  const userToFind = users.find(element => element.username === username);
+
+  if (!userToFind) {
+    return response.status(400).json({error: "Usuário não tem registro"})
+  }
+
+  return next()
 }
 
 app.post('/users', (request, response) => {
   const { name, username }= request.body;
+
+  const userToFind = users.find(element => element.username === username);
+
+  if (userToFind) {
+    return response.status(400).json({error: "Usuário já existe"})
+  }
 
   const todos = [];
 
@@ -28,15 +42,35 @@ app.post('/users', (request, response) => {
 
   users.push(user)
 
-  return response.json(user)
+  return response.status(200).json(user)
 });
 
 app.get('/todos', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+  const usersToFind = users.find(element => element.username === request.headers.username);
+
+  return response.status(200).json(usersToFind.todos)
 });
 
 app.post('/todos', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+  const user = users.find(element => element.username === request.headers.username);
+
+  if (!user) {
+    return response.status(400).json({error: "Usuário não existe"})
+  }
+
+  const {title, deadline} = request.body
+
+  const todoObject = {
+    id: uuidv4(),
+    title,
+    deadline: new Date(deadline),
+    done: false,
+    created_at: new Date(),
+  }
+
+  user.todos.push(todoObject)
+
+  return response.status(201).json(todoObject)
 });
 
 app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
