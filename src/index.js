@@ -82,6 +82,10 @@ app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
 
   const todos = user.todos.find(element => element.id === id)
 
+  if (!todos) {
+    return response.status(404).json({error: "Todo não existe"})
+  }
+
   todos.deadline = deadline
   todos.title = title
 
@@ -89,7 +93,19 @@ app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
 });
 
 app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+  const {id} = request.params
+  
+  const user = users.find(element => element.username === request.headers.username);
+
+  const todos = user.todos.find(element => element.id === id)
+
+  if (!todos) {
+    return response.status(404).json({error: "Todo não existe"})
+  }
+
+  todos.done = true
+
+  return response.status(201).json(todos)
 });
 
 app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
